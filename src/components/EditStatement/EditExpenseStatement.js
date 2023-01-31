@@ -4,22 +4,43 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { contexto } from "../../context/context";
+import { urlAccounts } from '../../Auxiliares/constants';
 
-export default function EditStatement(params) {
-    const { type, id } = useParams();
-    const [typeCopy, setType] = useState("");
+export default function EditExpenseStatement() {
+    const { id } = useParams();
     const [value, setValue] = useState("");
     const [description, setDescription] = useState("");
     const { userInfo } = useContext(contexto);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (type === "debits") {
-            setType("saída");
-        } else {
-            setType("entrada");
-        }
-    }, []);
+      if (JSON.stringify(userInfo) === "{}") {
+        return navigate("/");
+      }
+
+      axios.get(urlAccounts, {
+          headers: {
+              Authorization: `Bearer ${userInfo.token}`,
+          },
+      }).then((response) => {
+          const statement = response.data.statement;
+          if (!Array.isArray(statement)) {
+            return;
+          }
+    
+          const currentRegistry = statement.filter((registry) => {
+            return registry.id === parseInt(id);
+          });
+    
+          if (currentRegistry.length > 0) {
+            setValue(currentRegistry?.[0].value);
+          }
+    
+          if (currentRegistry.length > 0) {
+            setDescription(currentRegistry?.[0].description);
+          }
+      }).catch((response) => console.error(response));
+    }, [id]);
 
     function putStatement() {
         if (JSON.stringify(userInfo) === "{}") {
@@ -28,17 +49,17 @@ export default function EditStatement(params) {
 
         axios
             .put(
-                `http://localhost:5000/accounts/${id}`,
+                `${process.env.REACT_APP_API_URL}/accounts/${id}`,
                 {
                     value: value,
                     description: description,
-                    operation: type,
+                    operation: 'debits',
                 },
                 { headers: { Authorization: `Bearer ${userInfo.token}` } }
             )
             .then((response) => {
                 Swal.fire("Editado!", "Seu evento foi editado.", "success");
-                navigate("/account");
+                navigate("/home");
             })
             .catch((response) => {
                 console.error(response);
@@ -58,14 +79,16 @@ export default function EditStatement(params) {
 
     return (
         <EditStatementContainer>
-            <h1>Editar {typeCopy}</h1>
+            <h1>Editar saída</h1>
             <form action="" onSubmit={handleSubmit}>
                 <input
                     name="value"
                     type="number"
+                    data-test="registry-amount-input"
                     placeholder="Ex: 3500,50"
                     max={9999999999.9999999999}
                     min={0}
+                    step={0.01}
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     required
@@ -73,13 +96,14 @@ export default function EditStatement(params) {
                 <input
                     name="text"
                     type="text"
+                    data-test="registry-name-input"
                     placeholder="Ex: Presente da mamãe"
                     value={description}
                     maxLength="30"
                     onChange={(e) => setDescription(e.target.value)}
                     required
                 />
-                <button>Atualizar {typeCopy}</button>
+                <button data-test="registry-save">Atualizar saída</button>
             </form>
         </EditStatementContainer>
     );

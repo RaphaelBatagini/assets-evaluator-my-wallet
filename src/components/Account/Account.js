@@ -1,4 +1,6 @@
 import axios from "axios";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -49,7 +51,18 @@ export default function Account(params) {
             },
         });
         statementList.then((response) => {
-            setStatement(response.data.statement);
+            const orderedStatementList = response.data.statement.sort((a, b) => {
+              dayjs.extend(customParseFormat);
+              const aDate = dayjs(a.date, 'DD/MM/YYYY HH:mm:ss').valueOf();
+              const bDate = dayjs(b.date, 'DD/MM/YYYY HH:mm:ss').valueOf();
+              if (aDate === bDate) {
+                return 0;
+              }
+
+              return aDate < bDate ? 1 : -1;
+            });
+            console.log(JSON.stringify(orderedStatementList));
+            setStatement(orderedStatementList);
             setName(response.data.name);
             attBalance(response.data.statement);
         });

@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import styled from "styled-components";
 import GlobalStyle from "./Auxiliares/GlobalStyles";
 import Account from "./components/Account/Account";
-import EditStatement from "./components/EditStatement/EditStatement";
+import EditIncomeStatement from "./components/EditStatement/EditIncomeStatement";
+import EditExpenseStatement from "./components/EditStatement/EditExpenseStatement";
 import NewIncome from "./components/NewIncome/NewStatement";
 import NewOutcome from "./components/NewOutcome/NewStatement";
 import SignIn from "./components/Auth/SignIn";
@@ -20,7 +21,8 @@ function App() {
                         <Route path="/home" element={<Account />} />
                         <Route path="/nova-entrada" element={<NewIncome />} />
                         <Route path="/nova-saida" element={<NewOutcome />} />
-                        <Route path="/edit/:type/:id" element={<EditStatement />} />
+                        <Route path="/editar-entrada/:id" element={<EditIncomeStatement />} />
+                        <Route path="/editar-saida/:id" element={<EditExpenseStatement />} />
                     </Routes>
                 </BrowserRouter>
             </SmartPhoneContainer>
